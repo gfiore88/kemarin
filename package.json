@@ -1,0 +1,29 @@
+{
+  "name": "kemarin",
+  "version": "0.0.1",
+  "description": "Këmarin is a remote tool to monitor network, temperature, humidity, IP cameras and other parameters of a beach house",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gfiore88/kemarin.git"
+  },
+  "keywords": [
+    "kemarin"
+  ],
+  "author": "Giovanni Fiore",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/gfiore88/kemarin/issues"
+  },
+  "homepage": "https://github.com/gfiore88/kemarin#readme",
+  "dependencies": {
+    "epoll": "^2.0.3",
+    "express": "^4.16.3",
+    "onoff": "^3.2.1",
+    "rpio": "^0.9.22"
+  },
+  "devDependencies": {}
+}

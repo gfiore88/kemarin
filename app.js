@@ -7,6 +7,8 @@ var config = require('./config.json'); // file di configurazione
 
 var exec = require('child_process').exec;
 
+var sensor = require('node-dht-sensor');
+
 var porta = config.porta;
 
 var password = "1234";
@@ -41,34 +43,53 @@ app.get('/get', function (req, res) { // processiamo richiesta get verso /toggle
 });
 
 
-app.get('/shutdown/:'+password, function (req, res) { // comando shutdown + parametro per spegnere
+app.get('/shutdown/:' + password, function (req, res) { // comando shutdown + parametro per spegnere
     res.status(200).send("Il Raspberry si sta spegnendo...");
     execute("halt");
 
 });
 
-app.get('/reboot/:'+password, function (req, res) { // comando reboot + param per riavviare
+app.get('/reboot/:' + password, function (req, res) { // comando reboot + param per riavviare
     res.status(200).send("Il Raspberry si sta riavviando...");
     execute("reboot");
 
 });
 
-app.get('/servicerestart/:'+password, function (req, res) { // comando reboot + param per riavviare
+app.get('/servicerestart/:' + password, function (req, res) { // comando reboot + param per riavviare
     res.status(200).send("Kemarin service si sta riavviando...");
     execute("service kemarin restart");
 
 });
 
-app.get('/servicestop/:'+password, function (req, res) { // comando reboot + param per riavviare
+app.get('/servicestop/:' + password, function (req, res) { // comando reboot + param per riavviare
     res.status(200).send("Kemarin service si sta stoppando...");
     execute("service kemarin stop");
 
 });
 
-app.get('/servicestart/:'+password, function (req, res) { // comando reboot + param per riavviare
+app.get('/servicestart/:' + password, function (req, res) { // comando reboot + param per riavviare
     res.status(200).send("Kemarin service si sta startando...");
     execute("service kemarin start");
 
+});
+
+app.get('/readTempHum', function (req, res) { // legge temperatura e umidità
+    sensor.read(22, 17, function (err, temperature, humidity) {
+        if (!err) {
+            console.log('Temp: ' + temperature.toFixed(1) + '°C, ' +
+                'Umid: ' + humidity.toFixed(1) + '%'
+            );
+
+            res.status(200).json({
+                temperatura: temperature.toFixed(1) + '°C',
+                umidita: humidity.toFixed(1) + "%"
+            });
+
+        }
+        else {
+            res.status(500).send("ERROR" . err);
+        }
+    });
 });
 
 // Express route for any other unrecognised incoming requests

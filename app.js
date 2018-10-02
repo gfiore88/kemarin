@@ -1,81 +1,84 @@
 var express = require('express'); // Usiamo libreria express per facilitarci il routing // npm install express --save
-var app = express();
+var cors = require('cors');
 
-var sensor_temphum = require('./dht22.js');
+
+var app = express();
+app.use(cors()); //INTEGRATO CORS
+
 
 var config = require('./config.json'); // file di configurazione
 var porta = config.porta;
 var password = config.password;
 
-var relay = require('./gpio-onoff.js');
+var dht = require('./dht_sensors/dht22.js')
+var relay = require('./onoff/relay.js');
+var pir = require('./onoff/pir.js');
 var cam = require('./camera.js');
-
 var device = require('./device_commands.js');
-
-
+var sleep = require('sleep');
+var bot = require('./telegram_bot/bot.js');
+var lcd = require('./lcd_shield/lcd.js');
 
 
 /* COMANDI PER LA GESTIONE DEL RELAY (PIN ALTO PIN BASSO) */
-app.get('/toggle', function (req, res) { // TOGGLE - INVERTE LO STATO DEL PIN
-    // risposta in JSON
-    res.json(relay.toggle());
+app.get('/relay/toggle', function (req, res) { // TOGGLE - INVERTE LO STATO DEL PIN
+    res.json({relay_pin: 27, status: relay.toggle()});
 
 });
 
-app.get('/on', function (req, res) { // ON - ATTIVA IL PIN
-    // risposta in JSON
-    res.json(relay.on());
+app.get('/relay/on', function (req, res) { // ON - ATTIVA IL PIN
+    res.json({relay_pin: 27, status: relay.on()});
 
 });
 
-app.get('/off', function (req, res) { // OFF - DISATTIVA IL PIN
-    // risposta in JSON
-    res.json(relay.off());
+
+app.get('/relay/off', function (req, res) { // OFF - DISATTIVA IL PIN
+    res.json({relay_pin: 27, status: relay.off()});
 
 });
 
-app.get('/get', function (req, res) { // GET - OTTIENE LO STATO DEL PIN
-    // risposta in JSON
-    res.json(relay.get());
+app.get('/relay/status', function (req, res) { // GET - OTTIENE LO STATO DEL PIN
+    res.json({relay_pin: 27, status: relay.status()});
 
 });
 
 
 /* FUNZIONI PER LANCIARE COMANDI SUL DEVICE (RESTART, REBOOT, SHUTDOWN) */
 
-app.get('/shutdown/:' + password, function (req, res) { // comando shutdown + parametro per spegnere
-    res.status(200).send("Il Raspberry si sta spegnendo...");
+app.get('/system/shutdown/' + password, function (req, res) { // comando shutdown + parametro per spegnere
+    res.status(200).json({msg: "Il Raspberry si sta spegnendo..."});
     device.execute("halt");
 
 });
 
-app.get('/reboot/:' + password, function (req, res) { // comando reboot + param per riavviare
-    res.status(200).send("Il Raspberry si sta riavviando...");
+app.get('/system/reboot/' + password, function (req, res) { // comando reboot + param per riavviare
+    res.status(200).json({msg: "Il Raspberry si sta riavviando..."});
     device.execute("reboot")
 
 });
 
-app.get('/servicerestart/:' + password, function (req, res) { // comando reboot + param per riavviare
-    res.status(200).send("Kemarin service si sta riavviando...");
+app.get('/service/restart/' + password, function (req, res) { // comando restart + param per riavviare
+    res.status(200).json({msg: "Kemarin Service si sta riavviando..."});
     device.execute("service kemarin restart");
 
 });
 
-app.get('/servicestop/:' + password, function (req, res) { // comando reboot + param per riavviare
-    res.status(200).send("Kemarin service si sta stoppando...");
+app.get('/service/stop/' + password, function (req, res) { // comando stop + param per riavviare
+    res.status(200).json({msg: "Kemarin Service si sta stoppando..."});
     device.execute("service kemarin stop");
 
 });
 
-app.get('/servicestart/:' + password, function (req, res) { // comando reboot + param per riavviare
-    res.status(200).send("Kemarin service si sta startando...");
+app.get('/service/start/' + password, function (req, res) { // comando start + param per riavviare
+    res.status(200).json({msg: "Kemarin Service si sta startando..."});
     device.execute("service kemarin start");
 
 });
 
 /*COMANDI SENSORE TEMPERATURA E UMIDITA */
-app.get('/readTempHum', function (req, res) { // legge temperatura e umidità
-    res.json(sensor_temphum.leggisensore());
+app.get('/dht/read', function (req, res) { // legge temperatura e umidità
+    res.json(dht.read());
+
 });
 
 /* COMANDI WEBCAM */
@@ -94,7 +97,6 @@ app.get('*', function (req, res) {
 });
 
 
-
 var server = app.listen(porta, function () { // server in ascolto sulla porta
 
     var host = server.address().address;
@@ -102,6 +104,12 @@ var server = app.listen(porta, function () { // server in ascolto sulla porta
 
     console.log('Kemarin in ascolto su http://%s:%s', host, port);
 
+});
+
+
+// If ctrl+c is hit, free resources and exit.
+process.on('SIGINT', () => {
+    process.exit();
 });
 
 

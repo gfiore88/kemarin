@@ -1,5 +1,5 @@
 const Gpio = require('onoff').Gpio;
-const relay = new Gpio(27, 'high');
+const relay = new Gpio(26, 'high');
 
 module.exports = {
 

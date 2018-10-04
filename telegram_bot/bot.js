@@ -1,28 +1,48 @@
 const {Extra, Markup} = require('telegraf');
 const Telegraf = require('telegraf');
-var dht = require('../dht_sensors/dht22');
+const session = require('telegraf/session');
+const Stage = require('telegraf/stage');
+const Scene = require('telegraf/scenes/base');
+const { leave } = Stage;
+
+var dht = require('../dht_sensors/dht22.js');
 var relay = require('../onoff/relay.js');
+var switchpin = require('../onoff/switchpin');
+
 
 const bot = new Telegraf("620520590:AAGWbZQ7L-rS5t4wo5HjJUjdscLYAnU1-X8");
+var light = switchpin;
+light.setPin(26, 'low');
 
+
+const main_menu = [['🌡️ Temperatura/Umidità'], // Row1 with 1 buttons
+    ['📷 Webcam', '🔆️ Luce ON', '🔅️ Luce OFF'], // Row2 with 2 buttons
+    ['🖥 System CMD', '🌐️ Vai al sito']];
+
+const syscmd_menu = [['⬅ Torna Indietro'], ['🔄 Reload Node'], ['💠 Reload Raspberry']];
 
 bot.start((message) => {
     console.log('Bot inizializzato da:', message.from.id)
     return message.reply('Benvenuto su Këmarin BOT! Scrivi /lista per iniziare');
 });
 
-
 bot.command('lista', ({reply}) => {
     return reply('Benvenuto su Këmarin! Cosa vuoi visualizzare?', Markup
-        .keyboard([
-            ['🌡️ Temperatura/Umidità'], // Row1 with 2 buttons
-            ['✅ Accendi Luce', '❌ Spegni Luce'], // Row2 with 2 buttons
-            ['📷 Webcam', '🌐️ Vai al sito'] // Row3 with 2 buttons
-        ])
+        .keyboard(main_menu)
+        .oneTime()
+        .resize()
         .extra()
     )
-})
+});
 
+bot.hears('⬅ Torna Indietro', ({reply}) => {
+    return reply('✅ Rieccoti al menu principale!', Markup
+        .keyboard(main_menu)
+        .oneTime()
+        .resize()
+        .extra()
+    )
+});
 
 bot.hears('🌡️ Temperatura/Umidità', (ctx) => {
     var temphum = dht.read();
@@ -48,16 +68,39 @@ bot.hears('🌡️ Temperatura/Umidità', (ctx) => {
     ctx.replyWithHTML(txt);
 });
 
-bot.hears('✅ Accendi Luce', (ctx) => {
-    var txt = "🔆️ Perfetto! <b>Ho acceso la luce!</b>";
-    relay.on();
+bot.hears('🔆️ Luce ON', (ctx) => {
+    var txt;
+    if (light.on() == 1) {
+        txt = "🔆️ Perfetto! <b>Ho acceso la luce!</b>";
+    } else {
+        txt = "Problemi nell'accensione della luce";
+    }
     ctx.replyWithHTML(txt);
 });
 
-bot.hears('❌ Spegni Luce', (ctx) => {
-    var txt = "🔅️ Come vuoi! <b>Ho spento la luce!</b>";
-    relay.off();
+bot.hears('🔅️ Luce OFF', (ctx) => {
+    var txt;
+    if (light.off() == 0) {
+        txt = "🔅️ Come vuoi! <b>Ho spento la luce!</b>";
+    } else {
+        txt = "Problemi nello spegnimento della luce";
+    }
     ctx.replyWithHTML(txt);
+});
+
+bot.hears('🌐️ Vai al sito', (ctx) => {
+    var txt = "➡️ Visita https://www.ke-marin.it";
+    ctx.replyWithHTML(txt);
+});
+
+
+bot.hears(['🖥 System CMD'], ({reply}) => {
+    return reply('👨‍💻 Scegli un comando da eseguire', Markup
+        .keyboard(syscmd_menu)
+        .oneTime()
+        .resize()
+        .extra()
+    )
 });
 
 

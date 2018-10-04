@@ -25,18 +25,13 @@ lcd = new Lcd({
 });
 
 lcd.on('ready', function () {
-
-
     read_time_temp_hum();
-
-
 });
 
 
 module.exports = {
     setIntruder: function (val) {
         intruder = val;
-        console.log("3 RUNINTERVAL = " + intruder);
     },
 
     clear: function(){
@@ -46,10 +41,6 @@ module.exports = {
 
 
 function read_time_temp_hum() {
-
-    console.log("1 RUNINTERVAL = " + intruder);
-
-    console.log("2 RUNINTERVAL = " + intruder);
     setInterval(function () {
         if (intruder == 0) {
 
@@ -76,7 +67,7 @@ function read_time_temp_hum() {
         else {
             lcd.clear(function () {
                 lcd.setCursor(0, 0);
-                lcd.print("INTRUSOOOO ", function (err) {
+                lcd.print(" ** Intruso! **", function (err) {
                     if (err) {
                         throw err;
                     }
@@ -92,7 +83,6 @@ function read_time_temp_hum() {
 }
 
 process.on('SIGINT', () => {
-    lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Rebooting... ", function (err) {
         if (err) {

@@ -13,8 +13,8 @@ var password = config.password;
 var dht = require('./dht_sensors/dht22.js')
 var relay = require('./onoff/relay.js');
 var pir = require('./onoff/pir.js');
-var cam = require('./camera.js');
-var device = require('./device_commands.js');
+var cam = require('./camera/camera.js');
+var device = require('./system/device_commands.js');
 var sleep = require('sleep');
 var bot = require('./telegram_bot/bot.js');
 var lcd = require('./lcd_shield/lcd.js');
@@ -22,23 +22,22 @@ var lcd = require('./lcd_shield/lcd.js');
 
 /* COMANDI PER LA GESTIONE DEL RELAY (PIN ALTO PIN BASSO) */
 app.get('/relay/toggle', function (req, res) { // TOGGLE - INVERTE LO STATO DEL PIN
-    res.json({relay_pin: 27, status: relay.toggle()});
+    res.json({relay_pin: 26, status: relay.toggle()});
 
 });
 
 app.get('/relay/on', function (req, res) { // ON - ATTIVA IL PIN
-    res.json({relay_pin: 27, status: relay.on()});
+    res.json({relay_pin: 26, status: relay.on()});
 
 });
 
-
 app.get('/relay/off', function (req, res) { // OFF - DISATTIVA IL PIN
-    res.json({relay_pin: 27, status: relay.off()});
+    res.json({relay_pin: 26, status: relay.off()});
 
 });
 
 app.get('/relay/status', function (req, res) { // GET - OTTIENE LO STATO DEL PIN
-    res.json({relay_pin: 27, status: relay.status()});
+    res.json({relay_pin: 26, status: relay.status()});
 
 });
 

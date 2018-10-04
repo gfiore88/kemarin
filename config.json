@@ -1,5 +1,5 @@
 {
   "porta": 80,
-  "relay_pin": 27,
+  "relay_pin": 26,
   "password": 1234
 }
